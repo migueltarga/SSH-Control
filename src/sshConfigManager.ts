@@ -68,42 +68,82 @@ export class SSHConfigManager {
     }
   }
 
-  async addGroup(group: SSHGroup): Promise<void> {
+  async addGroup(group: SSHGroup, parentGroupPath?: number[]): Promise<void> {
     const config = await this.loadConfig();
-    config.groups.push(group);
+    if (parentGroupPath) {
+      const parentGroup = this.getGroupByPath(config, parentGroupPath);
+      if (parentGroup) {
+        if (!parentGroup.groups) {
+          parentGroup.groups = [];
+        }
+        parentGroup.groups.push(group);
+      }
+    } else {
+      config.groups.push(group);
+    }
     await this.saveConfig(config);
   }
 
-  async addHost(groupIndex: number, host: SSHHost): Promise<void> {
+  async addHost(groupPath: number[], host: SSHHost): Promise<void> {
     const config = await this.loadConfig();
-    if (config.groups[groupIndex]) {
-      config.groups[groupIndex].hosts.push(host);
+    const group = this.getGroupByPath(config, groupPath);
+    if (group) {
+      group.hosts.push(host);
       await this.saveConfig(config);
     }
   }
 
-  async updateHost(groupIndex: number, hostIndex: number, host: SSHHost): Promise<void> {
+  async updateHost(groupPath: number[], hostIndex: number, host: SSHHost): Promise<void> {
     const config = await this.loadConfig();
-    if (config.groups[groupIndex] && config.groups[groupIndex].hosts[hostIndex]) {
-      config.groups[groupIndex].hosts[hostIndex] = host;
+    const group = this.getGroupByPath(config, groupPath);
+    if (group && group.hosts[hostIndex]) {
+      group.hosts[hostIndex] = host;
       await this.saveConfig(config);
     }
   }
 
-  async deleteHost(groupIndex: number, hostIndex: number): Promise<void> {
+  async deleteHost(groupPath: number[], hostIndex: number): Promise<void> {
     const config = await this.loadConfig();
-    if (config.groups[groupIndex] && config.groups[groupIndex].hosts[hostIndex]) {
-      config.groups[groupIndex].hosts.splice(hostIndex, 1);
+    const group = this.getGroupByPath(config, groupPath);
+    if (group && group.hosts[hostIndex]) {
+      group.hosts.splice(hostIndex, 1);
       await this.saveConfig(config);
     }
   }
 
-  async deleteGroup(groupIndex: number): Promise<void> {
+  async deleteGroup(groupPath: number[]): Promise<void> {
     const config = await this.loadConfig();
-    if (config.groups[groupIndex]) {
-      config.groups.splice(groupIndex, 1);
-      await this.saveConfig(config);
+    if (groupPath.length === 1) {
+      // Deleting a top-level group
+      if (config.groups[groupPath[0]]) {
+        config.groups.splice(groupPath[0], 1);
+        await this.saveConfig(config);
+      }
+    } else {
+      // Deleting a nested group
+      const parentPath = groupPath.slice(0, -1);
+      const groupIndex = groupPath[groupPath.length - 1];
+      const parentGroup = this.getGroupByPath(config, parentPath);
+      if (parentGroup && parentGroup.groups && parentGroup.groups[groupIndex]) {
+        parentGroup.groups.splice(groupIndex, 1);
+        await this.saveConfig(config);
+      }
     }
+  }
+
+  private getGroupByPath(config: SSHConfig, groupPath: number[]): SSHGroup | null {
+    let currentGroups = config.groups;
+    let group: SSHGroup | null = null;
+
+    for (const index of groupPath) {
+      if (!currentGroups[index]) {
+        return null;
+      }
+      group = currentGroups[index];
+      currentGroups = group.groups || [];
+    }
+
+    return group;
   }
 
   getConfigFilePath(): string {

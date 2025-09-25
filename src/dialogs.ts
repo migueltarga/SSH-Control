@@ -24,28 +24,22 @@ export async function showAddGroupDialog(): Promise<SSHGroup | undefined> {
   });
 
   const defaultIdentityFile = await vscode.window.showInputBox({
-    prompt: 'Enter default identity file path (optional)',
-    placeHolder: 'e.g., ~/.ssh/id_rsa'
+    prompt: 'Enter default SSH key path (optional)',
+    placeHolder: 'e.g., ~/.ssh/id_rsa (leave empty for password auth)'
   });
 
-  const defaultPreferredAuth = await vscode.window.showQuickPick(
-    [
-      { label: 'publickey', description: 'Use SSH key authentication by default' },
-      { label: 'password', description: 'Use password authentication by default' }
-    ],
-    {
-      placeHolder: 'Choose default authentication method (optional)'
-    }
-  );
-
   const defaultPort = defaultPortStr ? parseInt(defaultPortStr) : 22;
+  
+  const defaultPreferredAuthentication = defaultIdentityFile && defaultIdentityFile.trim() 
+    ? 'publickey' as const 
+    : 'password' as const;
 
   return {
     name,
     defaultUser: defaultUser || undefined,
     defaultPort: defaultPort || undefined,
     defaultIdentityFile: defaultIdentityFile || undefined,
-    defaultPreferredAuthentication: defaultPreferredAuth?.label as 'publickey' | 'password' | undefined,
+    defaultPreferredAuthentication,
     hosts: []
   };
 }

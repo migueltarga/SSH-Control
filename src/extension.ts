@@ -4,6 +4,7 @@ import { SSHTreeDataProvider } from './sshTreeDataProvider';
 import { SSHConnectionManager } from './sshConnectionManager';
 import { SSHTreeItem } from './types';
 import { showAddGroupDialog, showAddHostDialog, showEditHostDialog } from './dialogs';
+import { getGroupChain } from './inheritance';
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log('SSH Control extension is now active!');
@@ -22,9 +23,11 @@ export function activate(context: vscode.ExtensionContext) {
 	treeView.onDidChangeSelection(async (event) => {
 		if (event.selection.length > 0) {
 			const item = event.selection[0];
-			if (item.type === 'host' && item.host && item.group) {
+			if (item.type === 'host' && item.host && item.groupPath) {
 				try {
-					await connectionManager.connectToHost(item.host, item.group);
+					const config = await configManager.loadConfig();
+					const groupChain = getGroupChain(config, item.groupPath);
+					await connectionManager.connectToHost(item.host, groupChain);
 					vscode.window.showInformationMessage(`Connecting to ${item.host.name}...`);
 				} catch (error) {
 					vscode.window.showErrorMessage(`Failed to connect to ${item.host.name}: ${error}`);
@@ -39,9 +42,11 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	const connectCommand = vscode.commands.registerCommand('sshServers.connect', async (item: SSHTreeItem) => {
-		if (item.type === 'host' && item.host && item.group) {
+		if (item.type === 'host' && item.host && item.groupPath) {
 			try {
-				await connectionManager.connectToHost(item.host, item.group);
+				const config = await configManager.loadConfig();
+				const groupChain = getGroupChain(config, item.groupPath);
+				await connectionManager.connectToHost(item.host, groupChain);
 				vscode.window.showInformationMessage(`Connecting to ${item.host.name}...`);
 			} catch (error) {
 				vscode.window.showErrorMessage(`Failed to connect to ${item.host.name}: ${error}`);
@@ -62,14 +67,15 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	const addServerCommand = vscode.commands.registerCommand('sshServers.addServer', async (item: SSHTreeItem) => {
-		if (item && item.type === 'group') {
-			const groupIndex = item.groupIndex!;
+		if (item && item.type === 'group' && item.groupPath) {
+			const config = await configManager.loadConfig();
+			const groupChain = getGroupChain(config, item.groupPath);
 			const group = item.group;
 
 			const host = await showAddHostDialog(group);
 			if (host) {
 				try {
-					await configManager.addHost(groupIndex, host);
+					await configManager.addHost(item.groupPath, host);
 					vscode.window.showInformationMessage(`Server "${host.name}" added successfully!`);
 				} catch (error) {
 					vscode.window.showErrorMessage(`Failed to add server: ${error}`);
@@ -79,11 +85,11 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	const editServerCommand = vscode.commands.registerCommand('sshServers.editServer', async (item: SSHTreeItem) => {
-		if (item.type === 'host' && item.host && item.groupIndex !== undefined && item.hostIndex !== undefined) {
+		if (item.type === 'host' && item.host && item.groupPath && item.hostIndex !== undefined) {
 			const updatedHost = await showEditHostDialog(item.host, item.group);
 			if (updatedHost) {
 				try {
-					await configManager.updateHost(item.groupIndex, item.hostIndex, updatedHost);
+					await configManager.updateHost(item.groupPath, item.hostIndex, updatedHost);
 					vscode.window.showInformationMessage(`Server "${updatedHost.name}" updated successfully!`);
 				} catch (error) {
 					vscode.window.showErrorMessage(`Failed to update server: ${error}`);
@@ -93,7 +99,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	const deleteServerCommand = vscode.commands.registerCommand('sshServers.deleteServer', async (item: SSHTreeItem) => {
-		if (item.type === 'host' && item.host && item.groupIndex !== undefined && item.hostIndex !== undefined) {
+		if (item.type === 'host' && item.host && item.groupPath && item.hostIndex !== undefined) {
 			const result = await vscode.window.showWarningMessage(
 				`Are you sure you want to delete "${item.host.name}"?`,
 				{ modal: true },
@@ -102,7 +108,7 @@ export function activate(context: vscode.ExtensionContext) {
 			
 			if (result === 'Delete') {
 				try {
-					await configManager.deleteHost(item.groupIndex, item.hostIndex);
+					await configManager.deleteHost(item.groupPath, item.hostIndex);
 					vscode.window.showInformationMessage(`Server "${item.host.name}" deleted successfully!`);
 				} catch (error) {
 					vscode.window.showErrorMessage(`Failed to delete server: ${error}`);
@@ -112,7 +118,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	const deleteGroupCommand = vscode.commands.registerCommand('sshServers.deleteGroup', async (item: SSHTreeItem) => {
-		if (item.type === 'group' && item.group && item.groupIndex !== undefined) {
+		if (item.type === 'group' && item.group && item.groupPath) {
 			const result = await vscode.window.showWarningMessage(
 				`Are you sure you want to delete group "${item.group.name}" and all its servers?`,
 				{ modal: true },
@@ -121,7 +127,7 @@ export function activate(context: vscode.ExtensionContext) {
 			
 			if (result === 'Delete') {
 				try {
-					await configManager.deleteGroup(item.groupIndex);
+					await configManager.deleteGroup(item.groupPath);
 					vscode.window.showInformationMessage(`Group "${item.group.name}" deleted successfully!`);
 				} catch (error) {
 					vscode.window.showErrorMessage(`Failed to delete group: ${error}`);

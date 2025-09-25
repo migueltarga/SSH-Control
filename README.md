@@ -25,20 +25,31 @@ Creates `ssh-config.json` in your workspace or `~/.ssh-control/`:
 {
   "groups": [
     {
-      "name": "Development",
-      "defaultUser": "root",
-      "defaultPort": 22,
+      "name": "Production",
+      "user": "ubuntu",
+      "port": 22,
+      "keyPath": "~/.ssh/prod_key",
       "hosts": [
         {
-          "hostName": "server.example.com",
-          "name": "My Server",
-          "user": "ubuntu",
-          "port": 2222,
-          "identityFile": "~/.ssh/key.pem",
-          "preferredAuthentication": "publickey"
+          "name": "web-server",
+          "hostName": "10.0.1.10"
+        }
+      ],
+      "groups": [
+        {
+          "name": "Database",
+          "port": 3306,
+          "hosts": [
+            {
+              "name": "db-server",
+              "hostName": "10.0.2.10",
+              "user": "dbadmin"
+            }
+          ]
         }
       ]
     }
   ]
 }
 ```
+

@@ -1,23 +1,68 @@
 {
   "groups": [
     {
-      "name": "DEV Servers",
-      "defaultUser": "root",
-      "defaultPort": 22,
-      "defaultIdentityFile": "~/.ssh/id_rsa",
-      "defaultPreferredAuthentication": "publickey",
+      "name": "Production",
+      "user": "ubuntu",
+      "port": 22,
+      "keyPath": "~/.ssh/production_key",
       "hosts": [
         {
-          "hostName": "development.site.com",
-          "name": "Development 1",
-          "user": "miguel",
-          "port": 2222,
-          "identityFile": "~/.ssh/my_key",
-          "preferredAuthentication": "publickey"
+          "name": "prod-web-01",
+          "hostName": "10.0.1.10"
         },
         {
-          "hostName": "192.168.1.101",
-          "name": "Development 2"
+          "name": "prod-web-02",
+          "hostName": "10.0.1.11"
+        }
+      ],
+      "groups": [
+        {
+          "name": "Database",
+          "port": 3306,
+          "hosts": [
+            {
+              "name": "prod-db-01",
+              "hostName": "10.0.2.10",
+              "user": "dbadmin"
+            },
+            {
+              "name": "prod-db-02",
+              "hostName": "10.0.2.11"
+            }
+          ]
+        },
+        {
+          "name": "Cache",
+          "hosts": [
+            {
+              "name": "redis-01",
+              "hostName": "10.0.3.10",
+              "port": 6379
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Development",
+      "user": "dev",
+      "port": 2222,
+      "keyPath": "~/.ssh/dev_key",
+      "hosts": [
+        {
+          "name": "dev-web",
+          "hostName": "192.168.1.100"
+        }
+      ],
+      "groups": [
+        {
+          "name": "Testing",
+          "hosts": [
+            {
+              "name": "test-server",
+              "hostName": "192.168.1.200"
+            }
+          ]
         }
       ]
     }

@@ -14,6 +14,7 @@ export interface SSHGroup {
   defaultIdentityFile?: string;
   defaultPreferredAuthentication?: 'publickey' | 'password';
   hosts: SSHHost[];
+  groups?: SSHGroup[];
 }
 
 export interface SSHConfig {
@@ -26,4 +27,6 @@ export interface SSHTreeItem {
   host?: SSHHost;
   groupIndex?: number;
   hostIndex?: number;
+  parentGroup?: SSHGroup;
+  groupPath?: number[];
 }

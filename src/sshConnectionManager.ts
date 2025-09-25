@@ -1,14 +1,13 @@
 import * as vscode from 'vscode';
 import { SSHHost, SSHGroup } from './types';
+import { resolveHostSettings } from './inheritance';
 
 export class SSHConnectionManager {
   private activeConnections: Map<string, vscode.Terminal> = new Map();
 
-  async connectToHost(host: SSHHost, group: SSHGroup): Promise<void> {
-    const user = host.user || group.defaultUser || 'root';
-    const port = host.port || group.defaultPort || 22;
-    const identityFile = host.identityFile || group.defaultIdentityFile;
-    const preferredAuth = host.preferredAuthentication || group.defaultPreferredAuthentication;
+  async connectToHost(host: SSHHost, groupChain: SSHGroup[]): Promise<void> {
+    const resolvedSettings = resolveHostSettings(host, groupChain);
+    const { user, port, identityFile } = resolvedSettings;
 
     // Build SSH command
     let sshCommand = `ssh ${user}@${host.hostName} -p ${port}`;

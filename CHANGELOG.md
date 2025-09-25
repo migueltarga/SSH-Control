@@ -4,6 +4,25 @@ All notable changes to the "ssh-control" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.1.0] - 2025-01-27
+
+### Added
+- **Nested Groups with Inheritance**: Support for hierarchical group organization
+  - Groups can contain other groups for better organization
+  - Full SSH configuration inheritance from parent to child groups
+  - Settings cascade down the hierarchy (host > child group > parent group)
+  - Automatic resolution of effective SSH settings for connections
+
+### Changed
+- Updated tree view to display nested group structures
+- Enhanced SSH connection logic to use inherited configurations
+- Improved dialogs to work with nested group paths
+
+### Technical
+- Refactored data structures to support nested groups
+- Added inheritance utility for resolving effective SSH settings
+- Updated all CRUD operations to work with group paths instead of simple indexes
+
 ## [0.0.1] - 2025-09-25
 
 ### Added
