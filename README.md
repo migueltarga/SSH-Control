@@ -1,6 +1,6 @@
 # SSH Control
 
-Manage SSH connections with a sidebar tree view. Connect to servers in new terminal tabs directly from VSCode.
+Manage SSH connections from VSCode
 
 ## Features
 

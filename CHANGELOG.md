@@ -20,7 +20,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
   - Add/edit/delete individual SSH servers
   - Interactive dialogs for server configuration
 - **SSH Config Compliance**:
-  - Uses `hostName` property (aligned with SSH config standards)
   - Support for `preferredAuthentication` (publickey/password)
   - Group-level defaults with host-level overrides
   - Identity file support with path expansion
