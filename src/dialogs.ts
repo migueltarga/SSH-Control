@@ -79,11 +79,6 @@ export async function showAddHostDialog(group?: SSHGroup): Promise<SSHHost | und
     placeHolder: group?.defaultPort?.toString() || '22'
   });
 
-  const identityFile = await vscode.window.showInputBox({
-    prompt: 'Enter identity file path (optional)',
-    placeHolder: group?.defaultIdentityFile || '~/.ssh/id_rsa'
-  });
-
   const preferredAuth = await vscode.window.showQuickPick(
     [
       { label: 'publickey', description: 'Use SSH key authentication' },
@@ -93,6 +88,14 @@ export async function showAddHostDialog(group?: SSHGroup): Promise<SSHHost | und
       placeHolder: 'Choose authentication method (optional)'
     }
   );
+
+  let identityFile: string | undefined;
+  if (preferredAuth?.label === 'publickey') {
+    identityFile = await vscode.window.showInputBox({
+      prompt: 'Enter SSH key file path',
+      placeHolder: group?.defaultIdentityFile || '~/.ssh/id_rsa'
+    });
+  }
 
   const port = portStr ? parseInt(portStr) : undefined;
 
@@ -137,12 +140,6 @@ export async function showEditHostDialog(existingHost: SSHHost, group?: SSHGroup
     placeHolder: group?.defaultPort?.toString() || '22'
   });
 
-  const identityFile = await vscode.window.showInputBox({
-    prompt: 'Enter identity file path (optional)',
-    value: existingHost.identityFile,
-    placeHolder: group?.defaultIdentityFile || '~/.ssh/id_rsa'
-  });
-
   const preferredAuth = await vscode.window.showQuickPick(
     [
       { label: 'publickey', description: 'Use SSH key authentication' },
@@ -152,6 +149,18 @@ export async function showEditHostDialog(existingHost: SSHHost, group?: SSHGroup
       placeHolder: 'Choose authentication method (optional)'
     }
   );
+
+  let identityFile: string | undefined;
+  if (preferredAuth?.label === 'publickey') {
+    identityFile = await vscode.window.showInputBox({
+      prompt: 'Enter SSH key file path',
+      value: existingHost.identityFile,
+      placeHolder: group?.defaultIdentityFile || '~/.ssh/id_rsa'
+    });
+  } else if (existingHost.preferredAuthentication === 'publickey' && !preferredAuth) {
+    // Keep existing identity file if user didn't change auth method but had publickey before
+    identityFile = existingHost.identityFile;
+  }
 
   const port = portStr ? parseInt(portStr) : undefined;
 

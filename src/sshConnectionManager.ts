@@ -20,11 +20,6 @@ export class SSHConnectionManager {
       sshCommand += ` -i "${expandedPath}"`;
     }
 
-    // Add preferred authentication method if specified (host-level or group-level)
-    if (preferredAuth) {
-      sshCommand += ` -o PreferredAuthentications=${preferredAuth}`;
-    }
-
     // Create unique terminal name with timestamp for multiple sessions
     const timestamp = new Date().toLocaleTimeString();
     const terminalName = `SSH: ${host.name} (${timestamp})`;

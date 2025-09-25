@@ -91,11 +91,6 @@
           "group": "navigation"
         },
         {
-          "command": "sshServers.addServer",
-          "when": "view == sshServers",
-          "group": "navigation"
-        },
-        {
           "command": "sshServers.openConfig",
           "when": "view == sshServers",
           "group": "navigation"
@@ -105,6 +100,11 @@
         {
           "command": "sshServers.connect",
           "when": "view == sshServers && viewItem == sshServer",
+          "group": "inline"
+        },
+        {
+          "command": "sshServers.addServer",
+          "when": "view == sshServers && viewItem == sshGroup",
           "group": "inline"
         },
         {

@@ -61,41 +61,19 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	const addServerCommand = vscode.commands.registerCommand('sshServers.addServer', async (item?: SSHTreeItem) => {
-		let groupIndex = 0;
-		let group = undefined;
-
+	const addServerCommand = vscode.commands.registerCommand('sshServers.addServer', async (item: SSHTreeItem) => {
 		if (item && item.type === 'group') {
-			groupIndex = item.groupIndex!;
-			group = item.group;
-		} else {
-			// Show group selection if no group is selected
-			const config = await configManager.loadConfig();
-			if (config.groups.length === 0) {
-				vscode.window.showWarningMessage('Please create a group first.');
-				return;
-			}
-			
-			const groupNames = config.groups.map(g => g.name);
-			const selectedGroupName = await vscode.window.showQuickPick(groupNames, {
-				placeHolder: 'Select a group for the new server'
-			});
-			
-			if (!selectedGroupName) {
-				return;
-			}
-			
-			groupIndex = config.groups.findIndex(g => g.name === selectedGroupName);
-			group = config.groups[groupIndex];
-		}
+			const groupIndex = item.groupIndex!;
+			const group = item.group;
 
-		const host = await showAddHostDialog(group);
-		if (host) {
-			try {
-				await configManager.addHost(groupIndex, host);
-				vscode.window.showInformationMessage(`Server "${host.name}" added successfully!`);
-			} catch (error) {
-				vscode.window.showErrorMessage(`Failed to add server: ${error}`);
+			const host = await showAddHostDialog(group);
+			if (host) {
+				try {
+					await configManager.addHost(groupIndex, host);
+					vscode.window.showInformationMessage(`Server "${host.name}" added successfully!`);
+				} catch (error) {
+					vscode.window.showErrorMessage(`Failed to add server: ${error}`);
+				}
 			}
 		}
 	});
