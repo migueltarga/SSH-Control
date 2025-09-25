@@ -3,10 +3,33 @@
   "displayName": "SSH Control",
   "description": "Manage SSH connections directly from VSCode.",
   "version": "0.0.1",
+  "publisher": "migueltarga",
   "author": {
     "name": "Miguel Targa",
     "email": "contact@targa.me",
     "url": "https://targa.me"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/migueltarga/SSH-Control.git"
+  },
+  "bugs": {
+    "url": "https://github.com/migueltarga/SSH-Control/issues"
+  },
+  "homepage": "https://github.com/migueltarga/SSH-Control#readme",
+  "keywords": [
+    "ssh",
+    "terminal",
+    "remote",
+    "server",
+    "connection",
+    "devops"
+  ],
+  "license": "MIT",
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
   },
   "engines": {
     "vscode": "^1.104.0"
