@@ -1,0 +1,160 @@
+{
+  "name": "ssh-control",
+  "displayName": "SSH Control",
+  "description": "Manage SSH connections directly from VSCode.",
+  "version": "0.0.1",
+  "author": {
+    "name": "Miguel Targa",
+    "email": "contact@targa.me",
+    "url": "https://targa.me"
+  },
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ssh-control",
+          "title": "SSH Control",
+          "icon": "$(server)"
+        }
+      ]
+    },
+    "views": {
+      "ssh-control": [
+        {
+          "id": "sshServers",
+          "name": "Servers",
+          "when": "true",
+          "icon": "$(server)"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "sshServers.refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "sshServers.connect",
+        "title": "Connect",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "sshServers.addServer",
+        "title": "Add Server",
+        "icon": "$(add)"
+      },
+      {
+        "command": "sshServers.addGroup",
+        "title": "Add Group",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "sshServers.editServer",
+        "title": "Edit Server",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "sshServers.deleteServer",
+        "title": "Delete Server",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "sshServers.deleteGroup",
+        "title": "Delete Group",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "sshServers.openConfig",
+        "title": "Open Config File",
+        "icon": "$(settings-gear)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "sshServers.refresh",
+          "when": "view == sshServers",
+          "group": "navigation"
+        },
+        {
+          "command": "sshServers.addGroup",
+          "when": "view == sshServers",
+          "group": "navigation"
+        },
+        {
+          "command": "sshServers.addServer",
+          "when": "view == sshServers",
+          "group": "navigation"
+        },
+        {
+          "command": "sshServers.openConfig",
+          "when": "view == sshServers",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "sshServers.connect",
+          "when": "view == sshServers && viewItem == sshServer",
+          "group": "inline"
+        },
+        {
+          "command": "sshServers.editServer",
+          "when": "view == sshServers && viewItem == sshServer",
+          "group": "context"
+        },
+        {
+          "command": "sshServers.deleteServer",
+          "when": "view == sshServers && viewItem == sshServer",
+          "group": "context"
+        },
+        {
+          "command": "sshServers.addServer",
+          "when": "view == sshServers && viewItem == sshGroup",
+          "group": "context"
+        },
+        {
+          "command": "sshServers.deleteGroup",
+          "when": "view == sshServers && viewItem == sshGroup",
+          "group": "context"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.104.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@typescript-eslint/eslint-plugin": "^8.42.0",
+    "@typescript-eslint/parser": "^8.42.0",
+    "eslint": "^9.34.0",
+    "esbuild": "^0.25.9",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.9.2",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}

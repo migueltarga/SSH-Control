@@ -1,0 +1,25 @@
+{
+  "groups": [
+    {
+      "name": "DEV Servers",
+      "defaultUser": "root",
+      "defaultPort": 22,
+      "defaultIdentityFile": "~/.ssh/id_rsa",
+      "defaultPreferredAuthentication": "publickey",
+      "hosts": [
+        {
+          "hostName": "development.site.com",
+          "name": "Development 1",
+          "user": "miguel",
+          "port": 2222,
+          "identityFile": "~/.ssh/my_key",
+          "preferredAuthentication": "publickey"
+        },
+        {
+          "hostName": "192.168.1.101",
+          "name": "Development 2"
+        }
+      ]
+    }
+  ]
+}
