@@ -23,8 +23,16 @@ export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem>
       const group = element.group!;
       const treeItem = new vscode.TreeItem(group.name, vscode.TreeItemCollapsibleState.Expanded);
       treeItem.contextValue = 'sshGroup';
-      treeItem.iconPath = new vscode.ThemeIcon('server-environment');
+      
+      treeItem.iconPath = new vscode.ThemeIcon('folder-opened', new vscode.ThemeColor('charts.purple'));
       treeItem.tooltip = `Group: ${group.name}`;
+      
+      const hostCount = group.hosts?.length || 0;
+      const groupCount = group.groups?.length || 0;
+      if (hostCount > 0 || groupCount > 0) {
+        treeItem.description = `${hostCount} hosts${groupCount > 0 ? `, ${groupCount} groups` : ''}`;
+      }
+      
       return treeItem;
     } else {
       const host = element.host!;
@@ -33,14 +41,33 @@ export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem>
       return this.configManager.loadConfig().then(config => {
         const treeItem = new vscode.TreeItem(host.name, vscode.TreeItemCollapsibleState.None);
         treeItem.contextValue = 'sshServer';
-        treeItem.iconPath = new vscode.ThemeIcon('server');
         
         // Get the full group chain for inheritance
         const groupChain = getGroupChain(config, element.groupPath || []);
         const resolvedSettings = resolveHostSettings(host, groupChain);
         
+        let iconColor = 'charts.green';
+        
+        if (resolvedSettings.preferredAuthentication === 'publickey') {
+          iconColor = 'charts.blue';
+        } else if (resolvedSettings.preferredAuthentication === 'password') {
+          iconColor = 'charts.orange';
+        }
+        
+        let iconName = 'server';
+        if (resolvedSettings.port !== 22) {
+          iconName = 'server-process';
+          iconColor = 'charts.yellow';
+        }
+        
+        treeItem.iconPath = new vscode.ThemeIcon(iconName, new vscode.ThemeColor(iconColor));
+        
         treeItem.description = `${resolvedSettings.user}@${host.hostName}:${resolvedSettings.port}`;
-        treeItem.tooltip = `${host.name}\nHost: ${host.hostName}\nUser: ${resolvedSettings.user}\nPort: ${resolvedSettings.port}`;
+        
+        treeItem.tooltip = `${host.name}\n` +
+                          `Host: ${host.hostName}\n` +
+                          `User: ${resolvedSettings.user}\n` +
+                          `Port: ${resolvedSettings.port}`;
         
         if (resolvedSettings.preferredAuthentication) {
           treeItem.tooltip += `\nAuth: ${resolvedSettings.preferredAuthentication}`;
@@ -49,6 +76,8 @@ export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem>
         if (resolvedSettings.identityFile) {
           treeItem.tooltip += `\nKey: ${resolvedSettings.identityFile}`;
         }
+        
+
         
         return treeItem;
       });
@@ -133,7 +162,7 @@ export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem>
             group: element.group,
             host: {
               hostName: 'error',
-              name: `❌ Failed to load remote data: ${error}`
+              name: `Failed to load remote data: ${error}`
             },
             groupIndex: element.groupIndex,
             hostIndex: -1,

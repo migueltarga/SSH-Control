@@ -21,10 +21,19 @@ export function activate(context: vscode.ExtensionContext) {
 		treeDataProvider: treeDataProvider
 	});
 
-	// Handle double-click to connect
-	treeView.onDidChangeSelection(async (event) => {
-		if (event.selection.length > 0) {
-			const item = event.selection[0];
+
+
+	// Register commands
+	const refreshCommand = vscode.commands.registerCommand('sshServers.refresh', () => {
+		remoteHostsService.clearCache();
+		treeDataProvider.refresh();
+	});
+
+	// Add a command to connect to currently selected host (for keybinding)
+	const connectSelectedCommand = vscode.commands.registerCommand('sshServers.connectSelected', async () => {
+		const selection = treeView.selection;
+		if (selection.length > 0) {
+			const item = selection[0];
 			if (item.type === 'host' && item.host && item.groupPath) {
 				try {
 					const config = await configManager.loadConfig();
@@ -38,11 +47,9 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	// Register commands
-	const refreshCommand = vscode.commands.registerCommand('sshServers.refresh', () => {
-		remoteHostsService.clearCache();
-		treeDataProvider.refresh();
-	});
+
+
+
 
 	const cacheInfoCommand = vscode.commands.registerCommand('sshServers.cacheInfo', async () => {
 		const cacheInfo = remoteHostsService.getCacheInfo();
@@ -179,6 +186,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		treeView,
 		refreshCommand,
+		connectSelectedCommand,
 		cacheInfoCommand,
 		connectCommand,
 		addGroupCommand,

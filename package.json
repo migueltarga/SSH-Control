@@ -73,7 +73,7 @@
       {
         "command": "sshServers.connect",
         "title": "Connect",
-        "icon": "$(plug)"
+        "icon": "$(terminal)"
       },
       {
         "command": "sshServers.addServer",
@@ -146,6 +146,11 @@
           "group": "inline"
         },
         {
+          "command": "sshServers.connect",
+          "when": "view == sshServers && viewItem == sshServer",
+          "group": "context@1"
+        },
+        {
           "command": "sshServers.editServer",
           "when": "view == sshServers && viewItem == sshServer",
           "group": "context"
@@ -171,7 +176,14 @@
           "group": "context"
         }
       ]
-    }
+    },
+    "keybindings": [
+      {
+        "command": "sshServers.connectSelected",
+        "key": "enter",
+        "when": "focusedView == sshServers"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
