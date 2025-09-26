@@ -2,6 +2,8 @@
 
 Manage SSH connections from VSCode
 
+![screenshot](https://github.com/migueltarga/SSH-Control/blob/main/screenshots/image.png?raw=true)
+
 ## Features
 
 - Sidebar tree view with hierarchical server groups
