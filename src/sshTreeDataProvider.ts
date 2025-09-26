@@ -2,12 +2,13 @@ import * as vscode from 'vscode';
 import { SSHConfigManager } from './sshConfigManager';
 import { SSHConfig, SSHGroup, SSHHost, SSHTreeItem } from './types';
 import { resolveHostSettings, getGroupChain } from './inheritance';
+import { RemoteHostsService } from './remoteHostsService';
 
 export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem> {
   private _onDidChangeTreeData: vscode.EventEmitter<SSHTreeItem | undefined | null | void> = new vscode.EventEmitter<SSHTreeItem | undefined | null | void>();
   readonly onDidChangeTreeData: vscode.Event<SSHTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
-  constructor(private configManager: SSHConfigManager) {
+  constructor(private configManager: SSHConfigManager, private remoteHostsService: RemoteHostsService) {
     this.configManager.onDidChangeConfig(() => {
       this._onDidChangeTreeData.fire();
     });
@@ -81,7 +82,7 @@ export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem>
         });
       }
       
-      // Then add hosts
+      // Then add local hosts
       group.hosts.forEach((host, index) => {
         items.push({
           type: 'host',
@@ -92,6 +93,51 @@ export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem>
           groupPath: element.groupPath
         });
       });
+
+      if (group.remoteHosts) {
+        try {
+          const remoteData = await this.remoteHostsService.fetchRemoteData(group.remoteHosts);
+          
+          if (remoteData.hosts) {
+            remoteData.hosts.forEach((host, index) => {
+              items.push({
+                type: 'host',
+                group: element.group,
+                host: host,
+                groupIndex: element.groupIndex,
+                hostIndex: group.hosts.length + index,
+                groupPath: element.groupPath
+              });
+            });
+          }
+
+          if (remoteData.groups) {
+            const localGroupsCount = group.groups?.length || 0;
+            remoteData.groups.forEach((remoteGroup, index) => {
+              items.push({
+                type: 'group',
+                group: remoteGroup,
+                parentGroup: group,
+                groupIndex: localGroupsCount + index,
+                groupPath: [...(element.groupPath || []), localGroupsCount + index]
+              });
+            });
+          }
+        } catch (error) {
+          console.error('Failed to fetch remote data:', error);
+          items.push({
+            type: 'host',
+            group: element.group,
+            host: {
+              hostName: 'error',
+              name: `❌ Failed to load remote data: ${error}`
+            },
+            groupIndex: element.groupIndex,
+            hostIndex: -1,
+            groupPath: element.groupPath
+          });
+        }
+      }
       
       return items;
     }

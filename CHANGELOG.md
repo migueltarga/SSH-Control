@@ -4,6 +4,30 @@ All notable changes to the "ssh-control" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.0] - 2025-09-25
+
+### Added
+- **Remote Hosts & Groups**: Support for fetching both hosts and groups from remote URLs
+  - Fetch complete nested structures from HTTP/HTTPS endpoints
+  - Support for JSON format with `hosts` and `groups` arrays
+  - HTTP Basic Authentication support for secured endpoints
+  - Automatic caching with 5-minute TTL to reduce network calls
+  - Remote data merges with local data (additive, not replacement)
+  - Error handling with fallback to cached data
+- **Timestamp Placeholder**: URLs now support `[timestamp]` placeholder for cache busting
+  - `[timestamp]` gets replaced with current timestamp (milliseconds since epoch)
+  - Useful for bypassing server-side caching: `?ts=[timestamp]`
+- **Add Child Groups**: UI button to create nested groups within existing groups
+  - Folder icon (📁) button appears next to each group
+  - Creates nested group structure with full inheritance support
+- **UI Commands**: 
+  - "Remote Cache Info" command to view cache status (shows hosts and groups count)
+
+### Changed
+- **Enhanced Inheritance**: Remote groups support the same inheritance rules as local groups
+- Remote data is fetched asynchronously when groups are expanded
+- Regular refresh button now clears remote cache automatically
+
 ## [0.1.0] - 2025-01-27
 
 ### Added

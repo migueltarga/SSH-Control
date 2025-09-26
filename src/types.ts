@@ -7,6 +7,19 @@ export interface SSHHost {
   preferredAuthentication?: 'publickey' | 'password';
 }
 
+export interface RemoteHostsConfig {
+  address: string;
+  basicAuth?: {
+    username: string;
+    password: string;
+  };
+}
+
+export interface RemoteResponse {
+  hosts?: SSHHost[];
+  groups?: SSHGroup[];
+}
+
 export interface SSHGroup {
   name: string;
   defaultUser?: string;
@@ -15,6 +28,7 @@ export interface SSHGroup {
   defaultPreferredAuthentication?: 'publickey' | 'password';
   hosts: SSHHost[];
   groups?: SSHGroup[];
+  remoteHosts?: RemoteHostsConfig;
 }
 
 export interface SSHConfig {

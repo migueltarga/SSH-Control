@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { SSHConfigManager } from './sshConfigManager';
 import { SSHTreeDataProvider } from './sshTreeDataProvider';
 import { SSHConnectionManager } from './sshConnectionManager';
+import { RemoteHostsService } from './remoteHostsService';
 import { SSHTreeItem } from './types';
 import { showAddGroupDialog, showAddHostDialog, showEditHostDialog } from './dialogs';
 import { getGroupChain } from './inheritance';
@@ -11,7 +12,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Initialize managers
 	const configManager = new SSHConfigManager();
-	const treeDataProvider = new SSHTreeDataProvider(configManager);
+	const remoteHostsService = new RemoteHostsService();
+	const treeDataProvider = new SSHTreeDataProvider(configManager, remoteHostsService);
 	const connectionManager = new SSHConnectionManager();
 
 	// Register tree view
@@ -38,7 +40,20 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Register commands
 	const refreshCommand = vscode.commands.registerCommand('sshServers.refresh', () => {
+		remoteHostsService.clearCache();
 		treeDataProvider.refresh();
+	});
+
+	const cacheInfoCommand = vscode.commands.registerCommand('sshServers.cacheInfo', async () => {
+		const cacheInfo = remoteHostsService.getCacheInfo();
+		if (cacheInfo.length === 0) {
+			vscode.window.showInformationMessage('No remote data cached.');
+		} else {
+			const infoMessage = cacheInfo.map(info => 
+				`URL: ${info.url}\nHosts: ${info.hostsCount}\nGroups: ${info.groupsCount}\nAge: ${info.age}s`
+			).join('\n\n');
+			vscode.window.showInformationMessage(`Remote Data Cache:\n\n${infoMessage}`);
+		}
 	});
 
 	const connectCommand = vscode.commands.registerCommand('sshServers.connect', async (item: SSHTreeItem) => {
@@ -164,6 +179,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		treeView,
 		refreshCommand,
+		cacheInfoCommand,
 		connectCommand,
 		addGroupCommand,
 		addChildGroupCommand,

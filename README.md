@@ -65,3 +65,69 @@ Creates `ssh-config.json` in your workspace or `~/.ssh-control/`:
 }
 ```
 
+### Remote Hosts
+
+Groups can fetch server lists from remote URLs, enabling dynamic server discovery and centralized management.
+
+```json
+{
+  "name": "Database",
+  "port": 3306,
+  "remoteHosts": {
+    "address": "https://api.example.com/servers.json?ts=[timestamp]",
+    "basicAuth": {
+      "username": "api_user", 
+      "password": "api_password"
+    }
+  },
+  "hosts": [
+    // Local hosts are merged with remote hosts/groups
+  ]
+}
+```
+
+**Timestamp Placeholder:**
+The `[timestamp]` placeholder in URLs gets replaced with the current timestamp (milliseconds since epoch) when the request is made. This is useful for bypassing server-side caching:
+
+```
+https://api.example.com/servers.json?ts=[timestamp]
+↓ becomes ↓
+https://api.example.com/servers.json?ts=1695691234567
+```
+
+**Remote JSON Format:**
+```json
+{
+  "hosts": [
+    {
+      "name": "server-01",
+      "hostName": "10.0.1.10",
+      "user": "admin"
+    }
+  ],
+  "groups": [
+    {
+      "name": "Nested Group",
+      "defaultUser": "root",
+      "hosts": [
+        {
+          "name": "nested-server",
+          "hostName": "10.0.2.10"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Remote Features:**
+- **Automatic Fetching**: Remote data is loaded when the group is expanded
+- **Caching**: Remote data is cached for 5 minutes to reduce network calls
+- **Full Structure Support**: Supports both hosts and nested groups in remote responses
+- **Format Support**: JSON structure or text format (hostname:name:user:port per line)
+- **Basic Authentication**: Optional HTTP basic auth support
+- **Timestamp Placeholder**: Use `[timestamp]` in URLs to bypass server-side caching
+- **Local Merge**: Remote hosts/groups are added to local ones, not replaced
+- **Error Handling**: Shows error messages if remote fetch fails, falls back to cache
+- **Manual Refresh**: Use "Refresh" button to clear cache and reload
+

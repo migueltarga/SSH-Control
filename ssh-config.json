@@ -19,6 +19,13 @@
         {
           "name": "Database",
           "port": 3306,
+          "remoteHosts": {
+            "address": "https://gist.githubusercontent.com/migueltarga/86bed4243b4d9a72eda4ad43e59eebe8/raw/hosts.json?ts=[timestamp]",
+            "basicAuth": {
+              "username": "dbuser",
+              "password": "securepassword"
+            }
+          },
           "hosts": [
             {
               "name": "prod-db-01",

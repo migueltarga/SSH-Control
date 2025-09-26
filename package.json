@@ -2,7 +2,7 @@
   "name": "ssh-control",
   "displayName": "SSH Control",
   "description": "Manage SSH connections directly from VSCode.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "migueltarga",
   "author": {
     "name": "Miguel Targa",
@@ -64,6 +64,11 @@
         "command": "sshServers.refresh",
         "title": "Refresh",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "sshServers.cacheInfo",
+        "title": "Remote Cache Info",
+        "icon": "$(info)"
       },
       {
         "command": "sshServers.connect",
