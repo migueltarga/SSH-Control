@@ -51,12 +51,42 @@ export class SSHConfigManager {
     
     try {
       const configData = fs.readFileSync(this.configPath, 'utf8');
-      return JSON.parse(configData);
+      const config = JSON.parse(configData);
+      return this.validateAndNormalizeConfig(config);
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to load SSH config: ${error}`);
       return { groups: [] };
     }
   }
+
+  private validateAndNormalizeConfig(config: any): SSHConfig {
+    if (!config || typeof config !== 'object') {
+      return { groups: [] };
+    }
+
+    const normalizedConfig: SSHConfig = {
+      groups: Array.isArray(config.groups) ? config.groups.map(this.validateAndNormalizeGroup) : []
+    };
+
+    return normalizedConfig;
+  }
+
+  private validateAndNormalizeGroup = (group: any): SSHGroup => {
+    if (!group || typeof group !== 'object' || !group.name) {
+      throw new Error('Invalid group structure');
+    }
+
+    return {
+      name: group.name,
+      defaultUser: group.defaultUser,
+      defaultPort: group.defaultPort,
+      defaultIdentityFile: group.defaultIdentityFile,
+      defaultPreferredAuthentication: group.defaultPreferredAuthentication,
+      hosts: Array.isArray(group.hosts) ? group.hosts : [],
+      groups: Array.isArray(group.groups) ? group.groups.map(this.validateAndNormalizeGroup) : undefined,
+      remoteHosts: group.remoteHosts
+    };
+  };
 
   async saveConfig(config: SSHConfig): Promise<void> {
     try {

@@ -59,6 +59,9 @@ export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem>
     if (!element) {
       // Root level - return top-level groups
       const config = await this.configManager.loadConfig();
+      if (!config || !config.groups || !Array.isArray(config.groups)) {
+        return [];
+      }
       return config.groups.map((group, index) => ({
         type: 'group',
         group,

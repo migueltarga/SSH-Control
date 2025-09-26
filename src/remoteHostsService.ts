@@ -101,9 +101,15 @@ export class RemoteHostsService {
       if (Array.isArray(jsonData)) {
         return { hosts: jsonData };
       } else if (jsonData.hosts || jsonData.groups) {
+        // Ensure remote groups have required properties
+        const normalizedGroups = (jsonData.groups || []).map((group: any) => ({
+          ...group,
+          hosts: group.hosts || []
+        }));
+        
         return {
           hosts: jsonData.hosts || [],
-          groups: jsonData.groups || []
+          groups: normalizedGroups
         };
       } else if (jsonData.hosts && Array.isArray(jsonData.hosts)) {
         return { hosts: jsonData.hosts };
