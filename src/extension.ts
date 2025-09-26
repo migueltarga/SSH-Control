@@ -66,6 +66,20 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
+	const addChildGroupCommand = vscode.commands.registerCommand('sshServers.addChildGroup', async (item: SSHTreeItem) => {
+		if (item && item.type === 'group' && item.groupPath) {
+			const group = await showAddGroupDialog();
+			if (group) {
+				try {
+					await configManager.addGroup(group, item.groupPath);
+					vscode.window.showInformationMessage(`Child group "${group.name}" added successfully!`);
+				} catch (error) {
+					vscode.window.showErrorMessage(`Failed to add child group: ${error}`);
+				}
+			}
+		}
+	});
+
 	const addServerCommand = vscode.commands.registerCommand('sshServers.addServer', async (item: SSHTreeItem) => {
 		if (item && item.type === 'group' && item.groupPath) {
 			const config = await configManager.loadConfig();
@@ -152,6 +166,7 @@ export function activate(context: vscode.ExtensionContext) {
 		refreshCommand,
 		connectCommand,
 		addGroupCommand,
+		addChildGroupCommand,
 		addServerCommand,
 		editServerCommand,
 		deleteServerCommand,

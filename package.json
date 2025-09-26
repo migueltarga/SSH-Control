@@ -2,7 +2,7 @@
   "name": "ssh-control",
   "displayName": "SSH Control",
   "description": "Manage SSH connections directly from VSCode.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "publisher": "migueltarga",
   "author": {
     "name": "Miguel Targa",
@@ -81,6 +81,11 @@
         "icon": "$(folder-opened)"
       },
       {
+        "command": "sshServers.addChildGroup",
+        "title": "Add Child Group",
+        "icon": "$(new-folder)"
+      },
+      {
         "command": "sshServers.editServer",
         "title": "Edit Server",
         "icon": "$(edit)"
@@ -131,6 +136,11 @@
           "group": "inline"
         },
         {
+          "command": "sshServers.addChildGroup",
+          "when": "view == sshServers && viewItem == sshGroup",
+          "group": "inline"
+        },
+        {
           "command": "sshServers.editServer",
           "when": "view == sshServers && viewItem == sshServer",
           "group": "context"
@@ -142,6 +152,11 @@
         },
         {
           "command": "sshServers.addServer",
+          "when": "view == sshServers && viewItem == sshGroup",
+          "group": "context"
+        },
+        {
+          "command": "sshServers.addChildGroup",
           "when": "view == sshServers && viewItem == sshGroup",
           "group": "context"
         },
