@@ -2,7 +2,7 @@
   "name": "ssh-control",
   "displayName": "SSH Control",
   "description": "Manage SSH connections directly from VSCode.",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "publisher": "migueltarga",
   "author": {
     "name": "Miguel Targa",
@@ -37,7 +37,9 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
@@ -56,6 +58,12 @@
           "name": "Servers",
           "when": "true",
           "icon": "$(server)"
+        },
+        {
+          "id": "sshHostHistory",
+          "name": "Host History",
+          "when": "sshControl.hostConnected",
+          "icon": "$(history)"
         }
       ]
     },
@@ -109,7 +117,39 @@
         "command": "sshServers.openConfig",
         "title": "Open Config File",
         "icon": "$(settings-gear)"
+      },
+      {
+        "command": "sshHostHistory.refresh",
+        "title": "Refresh History",
+        "icon": "$(refresh)"
+      },
+
+      {
+        "command": "sshHostHistory.runCommand",
+        "title": "Run Custom Command",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "sshHostHistory.grep",
+        "title": "Search Logs (grep)",
+        "icon": "$(search)"
+      },
+      {
+        "command": "sshHostHistory.copyCommand",
+        "title": "Copy Command",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "sshHostHistory.runHistoryCommand",
+        "title": "Run Command",
+        "icon": "$(play)"
+      },
+      {
+        "command": "sshControl.runSnippet",
+        "title": "Run Snippet...",
+        "icon": "$(snippet)"
       }
+
     ],
     "menus": {
       "view/title": [
@@ -127,7 +167,24 @@
           "command": "sshServers.openConfig",
           "when": "view == sshServers",
           "group": "navigation"
+        },
+        {
+          "command": "sshHostHistory.refresh",
+          "when": "view == sshHostHistory",
+          "group": "navigation"
+        },
+
+        {
+          "command": "sshHostHistory.runCommand",
+          "when": "view == sshHostHistory",
+          "group": "navigation"
+        },
+        {
+          "command": "sshHostHistory.grep",
+          "when": "view == sshHostHistory",
+          "group": "navigation"
         }
+
       ],
       "view/item/context": [
         {
@@ -174,14 +231,47 @@
           "command": "sshServers.deleteGroup",
           "when": "view == sshServers && viewItem == sshGroup",
           "group": "context"
+        },
+        {
+          "command": "sshHostHistory.runHistoryCommand",
+          "when": "view == sshHostHistory && viewItem == historyCommand",
+          "group": "inline"
+        },
+        {
+          "command": "sshHostHistory.copyCommand",
+          "when": "view == sshHostHistory && viewItem == historyCommand",
+          "group": "inline"
+        },
+        {
+          "command": "sshHostHistory.runHistoryCommand",
+          "when": "view == sshHostHistory && viewItem == historyCommand",
+          "group": "context@1"
+        },
+        {
+          "command": "sshHostHistory.copyCommand",
+          "when": "view == sshHostHistory && viewItem == historyCommand",
+          "group": "context"
+        }
+      ],
+      "terminal/context": [
+        {
+          "command": "sshControl.runSnippet",
+          "when": "true",
+          "group": "1_modification"
         }
       ]
+
     },
     "keybindings": [
       {
         "command": "sshServers.connectSelected",
         "key": "enter",
         "when": "focusedView == sshServers"
+      },
+      {
+        "command": "sshControl.runSnippet",
+        "key": "ctrl+shift+s",
+        "when": "terminalFocus"
       }
     ]
   },

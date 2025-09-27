@@ -131,3 +131,50 @@ https://api.example.com/servers.json?ts=1695691234567
 - **Error Handling**: Shows error messages if remote fetch fails, falls back to cache
 - **Manual Refresh**: Use "Refresh" button to clear cache and reload
 
+### Command Snippets
+
+Define reusable command snippets at both group and host levels. When you right-click on a terminal window, you'll see available snippets for quick execution.
+
+```json
+{
+  "groups": [
+    {
+      "name": "Production",
+      "snippets": [
+        {
+          "name": "Check System Status",
+          "command": "systemctl status nginx && df -h && free -m"
+        },
+        {
+          "name": "View Logs",
+          "command": "tail -f /var/log/nginx/access.log"
+        }
+      ],
+      "hosts": [
+        {
+          "name": "web-server-01",
+          "hostName": "10.0.1.10",
+          "snippets": [
+            {
+              "name": "Restart Web Service",
+              "command": "sudo systemctl restart nginx"
+            },
+            {
+              "name": "Check SSL Certificate",
+              "command": "openssl x509 -in /etc/ssl/certs/nginx.crt -text -noout | grep -A2 Validity"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Snippet Features:**
+- **Hierarchical Inheritance**: Host snippets are combined with group snippets
+- **Right-click Access**: Right-click on any SSH terminal to see available snippets
+- **Quick Execution**: Select a snippet to run it immediately in the active terminal
+- **Command Search**: Filter snippets by name or command content
+- **No Duplicates**: Duplicate commands are automatically filtered out
+

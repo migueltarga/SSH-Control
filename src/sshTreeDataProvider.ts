@@ -36,13 +36,11 @@ export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem>
       return treeItem;
     } else {
       const host = element.host!;
-      
-      // Return a promise for async processing
+
       return this.configManager.loadConfig().then(config => {
         const treeItem = new vscode.TreeItem(host.name, vscode.TreeItemCollapsibleState.None);
         treeItem.contextValue = 'sshServer';
-        
-        // Get the full group chain for inheritance
+
         const groupChain = getGroupChain(config, element.groupPath || []);
         const resolvedSettings = resolveHostSettings(host, groupChain);
         
@@ -76,9 +74,7 @@ export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem>
         if (resolvedSettings.identityFile) {
           treeItem.tooltip += `\nKey: ${resolvedSettings.identityFile}`;
         }
-        
-
-        
+    
         return treeItem;
       });
     }
@@ -86,7 +82,7 @@ export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem>
 
   async getChildren(element?: SSHTreeItem): Promise<SSHTreeItem[]> {
     if (!element) {
-      // Root level - return top-level groups
+
       const config = await this.configManager.loadConfig();
       if (!config || !config.groups || !Array.isArray(config.groups)) {
         return [];
@@ -100,8 +96,7 @@ export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem>
     } else if (element.type === 'group') {
       const group = element.group!;
       const items: SSHTreeItem[] = [];
-      
-      // Add nested groups first
+
       if (group.groups) {
         group.groups.forEach((nestedGroup, index) => {
           items.push({
@@ -113,8 +108,7 @@ export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem>
           });
         });
       }
-      
-      // Then add local hosts
+
       group.hosts.forEach((host, index) => {
         items.push({
           type: 'host',
@@ -156,7 +150,7 @@ export class SSHTreeDataProvider implements vscode.TreeDataProvider<SSHTreeItem>
             });
           }
         } catch (error) {
-          console.error('Failed to fetch remote data:', error);
+
           items.push({
             type: 'host',
             group: element.group,

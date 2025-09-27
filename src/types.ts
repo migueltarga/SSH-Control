@@ -1,3 +1,8 @@
+export interface CommandSnippet {
+  name: string;
+  command: string;
+}
+
 export interface SSHHost {
   hostName: string;
   name: string;
@@ -5,6 +10,7 @@ export interface SSHHost {
   port?: number;
   identityFile?: string;
   preferredAuthentication?: 'publickey' | 'password';
+  snippets?: CommandSnippet[];
 }
 
 export interface RemoteHostsConfig {
@@ -26,6 +32,7 @@ export interface SSHGroup {
   defaultPort?: number;
   defaultIdentityFile?: string;
   defaultPreferredAuthentication?: 'publickey' | 'password';
+  snippets?: CommandSnippet[];
   hosts: SSHHost[];
   groups?: SSHGroup[];
   remoteHosts?: RemoteHostsConfig;

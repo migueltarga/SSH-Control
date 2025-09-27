@@ -17,7 +17,7 @@ export class SSHConfigManager {
     if (workspaceFolder) {
       return path.join(workspaceFolder.uri.fsPath, 'ssh-config.json');
     }
-    // Fallback to user's home directory
+
     const homeDir = require('os').homedir();
     return path.join(homeDir, '.ssh-control', 'ssh-config.json');
   }
@@ -31,12 +31,21 @@ export class SSHConfigManager {
             defaultUser: "root",
             defaultPort: 22,
             defaultIdentityFile: "",
+            snippets: [
+              {
+                name: "System Status",
+                command: "uname -a && uptime && df -h"
+              },
+              {
+                name: "Process Monitor",
+                command: "top -n 1 | head -20"
+              }
+            ],
             hosts: []
           }
         ]
       };
-      
-      // Ensure directory exists
+
       const configDir = path.dirname(this.configPath);
       if (!fs.existsSync(configDir)) {
         fs.mkdirSync(configDir, { recursive: true });
@@ -82,6 +91,7 @@ export class SSHConfigManager {
       defaultPort: group.defaultPort,
       defaultIdentityFile: group.defaultIdentityFile,
       defaultPreferredAuthentication: group.defaultPreferredAuthentication,
+      snippets: Array.isArray(group.snippets) ? group.snippets : undefined,
       hosts: Array.isArray(group.hosts) ? group.hosts : [],
       groups: Array.isArray(group.groups) ? group.groups.map(this.validateAndNormalizeGroup) : undefined,
       remoteHosts: group.remoteHosts
@@ -144,13 +154,13 @@ export class SSHConfigManager {
   async deleteGroup(groupPath: number[]): Promise<void> {
     const config = await this.loadConfig();
     if (groupPath.length === 1) {
-      // Deleting a top-level group
+
       if (config.groups[groupPath[0]]) {
         config.groups.splice(groupPath[0], 1);
         await this.saveConfig(config);
       }
     } else {
-      // Deleting a nested group
+
       const parentPath = groupPath.slice(0, -1);
       const groupIndex = groupPath[groupPath.length - 1];
       const parentGroup = this.getGroupByPath(config, parentPath);

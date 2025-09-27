@@ -3,33 +3,35 @@ import { SSHConfigManager } from './sshConfigManager';
 import { SSHTreeDataProvider } from './sshTreeDataProvider';
 import { SSHConnectionManager } from './sshConnectionManager';
 import { RemoteHostsService } from './remoteHostsService';
+import { SSHHostHistoryProvider, HostHistoryTreeItem } from './sshHostHistoryProvider';
 import { SSHTreeItem } from './types';
 import { showAddGroupDialog, showAddHostDialog, showEditHostDialog } from './dialogs';
 import { getGroupChain } from './inheritance';
+import { SnippetService } from './snippetService';
+import { SnippetMenuManager } from './snippetMenuManager';
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('SSH Control extension is now active!');
-
-	// Initialize managers
 	const configManager = new SSHConfigManager();
 	const remoteHostsService = new RemoteHostsService();
 	const treeDataProvider = new SSHTreeDataProvider(configManager, remoteHostsService);
 	const connectionManager = new SSHConnectionManager();
+	const hostHistoryProvider = new SSHHostHistoryProvider(context);
+	const snippetService = new SnippetService(configManager, hostHistoryProvider);
+	const snippetMenuManager = new SnippetMenuManager(context, snippetService);
 
-	// Register tree view
 	const treeView = vscode.window.createTreeView('sshServers', {
 		treeDataProvider: treeDataProvider
 	});
 
+	const hostHistoryView = vscode.window.createTreeView('sshHostHistory', {
+		treeDataProvider: hostHistoryProvider
+	});
 
-
-	// Register commands
 	const refreshCommand = vscode.commands.registerCommand('sshServers.refresh', () => {
 		remoteHostsService.clearCache();
 		treeDataProvider.refresh();
 	});
 
-	// Add a command to connect to currently selected host (for keybinding)
 	const connectSelectedCommand = vscode.commands.registerCommand('sshServers.connectSelected', async () => {
 		const selection = treeView.selection;
 		if (selection.length > 0) {
@@ -46,10 +48,6 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}
 	});
-
-
-
-
 
 	const cacheInfoCommand = vscode.commands.registerCommand('sshServers.cacheInfo', async () => {
 		const cacheInfo = remoteHostsService.getCacheInfo();
@@ -70,6 +68,10 @@ export function activate(context: vscode.ExtensionContext) {
 				const groupChain = getGroupChain(config, item.groupPath);
 				await connectionManager.connectToHost(item.host, groupChain);
 				vscode.window.showInformationMessage(`Connecting to ${item.host.name}...`);
+
+				hostHistoryProvider.setCurrentHost(item.host.name);
+				await vscode.commands.executeCommand('setContext', 'sshControl.hostConnected', true);
+				
 			} catch (error) {
 				vscode.window.showErrorMessage(`Failed to connect to ${item.host.name}: ${error}`);
 			}
@@ -182,9 +184,50 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	// Add all commands to subscriptions
+	const hostHistoryRefreshCommand = vscode.commands.registerCommand('sshHostHistory.refresh', () => {
+		hostHistoryProvider.refresh();
+	});
+
+	const hostHistoryRunCommandCommand = vscode.commands.registerCommand('sshHostHistory.runCommand', async () => {
+		await hostHistoryProvider.runCustomCommand();
+	});
+
+	const hostHistoryGrepCommand = vscode.commands.registerCommand('sshHostHistory.grep', async () => {
+		await hostHistoryProvider.runGrepSearch();
+	});
+
+	const hostHistoryCopyCommand = vscode.commands.registerCommand('sshHostHistory.copyCommand', (item: HostHistoryTreeItem) => {
+		if (item.historyCommand) {
+			hostHistoryProvider.copyCommand(item.historyCommand.command);
+		}
+	});
+
+	const hostHistoryRunHistoryCommand = vscode.commands.registerCommand('sshHostHistory.runHistoryCommand', (item: HostHistoryTreeItem) => {
+		if (item.historyCommand) {
+			hostHistoryProvider.runCommand(item.historyCommand.command);
+		}
+	});
+
+	const hostHistorySearchCommand = vscode.commands.registerCommand('sshHostHistory.showSearchInput', async () => {
+		await hostHistoryProvider.showSearchInput();
+	});
+
+	const hostHistoryClearFilterCommand = vscode.commands.registerCommand('sshHostHistory.clearFilter', () => {
+		hostHistoryProvider.clearFilter();
+	});
+
+	const runSnippetCommand = vscode.commands.registerCommand('sshControl.runSnippet', async () => {
+		try {
+			await snippetService.showSnippetPicker();
+		} catch (error) {
+			console.error('SSH Control: Error in runSnippet:', error);
+			vscode.window.showErrorMessage(`Snippet error: ${error}`);
+		}
+	});
+
 	context.subscriptions.push(
 		treeView,
+		hostHistoryView,
 		refreshCommand,
 		connectSelectedCommand,
 		cacheInfoCommand,
@@ -195,10 +238,16 @@ export function activate(context: vscode.ExtensionContext) {
 		editServerCommand,
 		deleteServerCommand,
 		deleteGroupCommand,
-		openConfigCommand
+		openConfigCommand,
+		hostHistoryRefreshCommand,
+		hostHistoryRunCommandCommand,
+		hostHistoryGrepCommand,
+		hostHistoryCopyCommand,
+		hostHistoryRunHistoryCommand,
+		hostHistorySearchCommand,
+		hostHistoryClearFilterCommand,
+		runSnippetCommand
 	);
-
-	// Show initial configuration file location
 	vscode.window.showInformationMessage(`SSH Control loaded. Config file: ${configManager.getConfigFilePath()}`);
 }
 

@@ -4,6 +4,18 @@ All notable changes to the "ssh-control" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.0.0] - 2025-09-26
+
+### Added
+- **Command Snippets**: Define reusable command snippets at group and host levels
+  - Add `snippets` array to groups and hosts in SSH configuration
+  - Each snippet has a `name` and `command` for easy identification and execution
+  - Support for complex multi-command snippets (e.g., `systemctl status nginx && df -h && free -m`)
+- **Hierarchical Snippet Inheritance**: Snippets automatically inherit from parent groups to child hosts
+  - Host-level snippets have access to all parent group snippets
+  - More specific (host-level) snippets take precedence over duplicates
+  - Full aggregation from top-level groups down to individual hosts
+
 ## [0.2.0] - 2025-09-25
 
 ### Added

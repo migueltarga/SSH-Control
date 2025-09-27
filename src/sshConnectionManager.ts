@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { SSHHost, SSHGroup } from './types';
 import { resolveHostSettings } from './inheritance';
+import { SSHHostHistoryProvider } from './sshHostHistoryProvider';
 
 export class SSHConnectionManager {
   private activeConnections: Map<string, vscode.Terminal> = new Map();
@@ -17,7 +18,6 @@ export class SSHConnectionManager {
     const resolvedSettings = resolveHostSettings(host, groupChain);
     const { user, port, identityFile } = resolvedSettings;
 
-    // Build SSH command
     let sshCommand = `ssh ${user}@${host.hostName} -p ${port}`;
     
     if (identityFile && identityFile.trim()) {
@@ -49,7 +49,6 @@ export class SSHConnectionManager {
     
     const terminalKey = `${baseTerminalName}|||${nextNumber}`;
 
-    // Create terminal in editor tab area (not in terminal panel)
     const terminal = vscode.window.createTerminal({
       name: terminalName,
       iconPath: new vscode.ThemeIcon('server'),
@@ -59,9 +58,15 @@ export class SSHConnectionManager {
     terminal.show();
     terminal.sendText(sshCommand);
 
-    // Store connection for management
     this.activeConnections.set(terminalKey, terminal);
     this.terminalToKey.set(terminal, terminalKey);
+
+    SSHHostHistoryProvider.setTerminalSSHInfo(terminalName, {
+      hostName: host.hostName,
+      user: user,
+      port: port,
+      keyPath: identityFile || undefined
+    });
   }
 
   private handleTerminalClose(closedTerminal: vscode.Terminal): void {
@@ -69,6 +74,8 @@ export class SSHConnectionManager {
     if (!terminalKey) {
       return; 
     }
+
+    SSHHostHistoryProvider.cleanupClosedTerminal(closedTerminal.name);
 
     this.activeConnections.delete(terminalKey);
     this.terminalToKey.delete(closedTerminal);

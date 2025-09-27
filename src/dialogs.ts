@@ -152,7 +152,7 @@ export async function showEditHostDialog(existingHost: SSHHost, group?: SSHGroup
       placeHolder: group?.defaultIdentityFile || '~/.ssh/id_rsa'
     });
   } else if (existingHost.preferredAuthentication === 'publickey' && !preferredAuth) {
-    // Keep existing identity file if user didn't change auth method but had publickey before
+
     identityFile = existingHost.identityFile;
   }
 

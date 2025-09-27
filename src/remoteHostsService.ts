@@ -6,7 +6,7 @@ import { SSHHost, SSHGroup, RemoteHostsConfig, RemoteResponse } from './types';
 
 export class RemoteHostsService {
   private cache: Map<string, { response: RemoteResponse, timestamp: number }> = new Map();
-  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+  private readonly CACHE_DURATION = 5 * 60 * 1000;
 
   constructor() {}
 
@@ -27,8 +27,6 @@ export class RemoteHostsService {
       this.cache.set(cacheKey, { response, timestamp: Date.now() });
       return response;
     } catch (error) {
-      console.error('Failed to fetch remote data:', error);
-      
       if (cached) {
         vscode.window.showWarningMessage(`Failed to fetch remote data, using cached data. Error: ${error}`);
         return cached.response;
@@ -101,7 +99,7 @@ export class RemoteHostsService {
       if (Array.isArray(jsonData)) {
         return { hosts: jsonData };
       } else if (jsonData.hosts || jsonData.groups) {
-        // Ensure remote groups have required properties
+
         const normalizedGroups = (jsonData.groups || []).map((group: any) => ({
           ...group,
           hosts: group.hosts || []

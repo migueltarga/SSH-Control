@@ -1,4 +1,4 @@
-import { SSHHost, SSHGroup } from './types';
+import { SSHHost, SSHGroup, CommandSnippet } from './types';
 
 export function resolveHostSettings(host: SSHHost, groupChain: SSHGroup[]): {
   user: string;
@@ -62,5 +62,32 @@ export function getGroupChain(config: { groups: SSHGroup[] }, groupPath: number[
     current = group.groups || [];
   }
 
-  return chain.reverse();
+  return chain; // Don't reverse - we want parent groups first for inheritance
+}
+
+export function aggregateSnippets(host: SSHHost, groupChain: SSHGroup[]): CommandSnippet[] {
+  const snippets: CommandSnippet[] = [];
+  const seenCommands = new Set<string>();
+
+  for (const group of groupChain) {
+    if (group.snippets) {
+      for (const snippet of group.snippets) {
+        if (!seenCommands.has(snippet.command)) {
+          snippets.push(snippet);
+          seenCommands.add(snippet.command);
+        }
+      }
+    }
+  }
+
+  if (host.snippets) {
+    for (const snippet of host.snippets) {
+      if (!seenCommands.has(snippet.command)) {
+        snippets.push(snippet);
+        seenCommands.add(snippet.command);
+      }
+    }
+  }
+
+  return snippets;
 }
