@@ -1,0 +1,159 @@
+{
+  "groups": [
+    {
+      "name": "Production Environment",
+      "defaultUser": "prod",
+      "defaultPort": 22,
+      "defaultIdentityFile": "~/.ssh/production_key",
+      "defaultPreferredAuthentication": "publickey",
+      "snippets": [
+        {
+          "name": "Production Health Check",
+          "command": "uptime && df -h / && free -m && systemctl is-failed --quiet || echo 'All services running'"
+        },
+        {
+          "name": "Security Audit",
+          "command": "sudo last -10 && sudo fail2ban-client status && sudo ufw status"
+        },
+        {
+          "name": "Backup Status",
+          "command": "ls -la /backup/ && du -sh /backup/*"
+        }
+      ],
+      "hosts": [
+        {
+          "name": "Load Balancer",
+          "hostName": "lb.prod.example.com",
+          "snippets": [
+            {
+              "name": "HAProxy Status",
+              "command": "systemctl status haproxy && sudo haproxy -c -f /etc/haproxy/haproxy.cfg"
+            },
+            {
+              "name": "Check Backend Health",
+              "command": "curl -s http://localhost:8404/stats | grep -E 'web[0-9]+'"
+            }
+          ]
+        }
+      ],
+      "groups": [
+        {
+          "name": "Web Tier",
+          "snippets": [
+            {
+              "name": "Web Services Status",
+              "command": "systemctl status nginx php8.1-fpm"
+            },
+            {
+              "name": "Web Performance",
+              "command": "curl -w '@-' -o /dev/null -s http://localhost <<< 'time_total: %{time_total}\\ntime_connect: %{time_connect}\\ntime_starttransfer: %{time_starttransfer}\\n'"
+            }
+          ],
+          "hosts": [
+            {
+              "name": "Web Server 1",
+              "hostName": "web1.prod.example.com",
+              "snippets": [
+                {
+                  "name": "Nginx Access Logs",
+                  "command": "tail -50 /var/log/nginx/access.log | awk '{print $1, $7, $9}' | sort | uniq -c | sort -nr"
+                }
+              ]
+            },
+            {
+              "name": "Web Server 2",
+              "hostName": "web2.prod.example.com",
+              "snippets": [
+                {
+                  "name": "PHP-FPM Status",
+                  "command": "curl -s http://localhost/fpm-status | head -20"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Data Tier",
+          "defaultUser": "dbadmin",
+          "snippets": [
+            {
+              "name": "Database Health",
+              "command": "systemctl status mysql redis-server"
+            },
+            {
+              "name": "Database Backup Check",
+              "command": "ls -la /var/backups/mysql/ | tail -5"
+            }
+          ],
+          "groups": [
+            {
+              "name": "MySQL Cluster",
+              "hosts": [
+                {
+                  "name": "MySQL Primary",
+                  "hostName": "mysql-primary.prod.example.com",
+                  "snippets": [
+                    {
+                      "name": "Replication Status",
+                      "command": "mysql -e 'SHOW MASTER STATUS; SHOW SLAVE HOSTS;'"
+                    },
+                    {
+                      "name": "Binary Log Position",
+                      "command": "mysql -e 'SHOW BINARY LOGS;' | tail -5"
+                    }
+                  ]
+                },
+                {
+                  "name": "MySQL Replica",
+                  "hostName": "mysql-replica.prod.example.com",
+                  "snippets": [
+                    {
+                      "name": "Slave Status",
+                      "command": "mysql -e 'SHOW SLAVE STATUS\\G' | grep -E 'Slave_IO_Running|Slave_SQL_Running|Seconds_Behind_Master'"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Development Environment",
+      "defaultUser": "developer",
+      "defaultPort": 22,
+      "defaultPreferredAuthentication": "password",
+      "snippets": [
+        {
+          "name": "Development Setup",
+          "command": "git status && npm ls --depth=0 2>/dev/null || echo 'No npm packages'"
+        },
+        {
+          "name": "Restart Dev Services",
+          "command": "sudo systemctl restart nginx mysql && docker-compose restart"
+        }
+      ],
+      "remoteHosts": {
+        "address": "https://dev-config.example.com/servers.json?team=backend&env=dev"
+      },
+      "hosts": [
+        {
+          "name": "Dev Server",
+          "hostName": "dev.example.com",
+          "port": 2222,
+          "snippets": [
+            {
+              "name": "Check Dev Environment",
+              "command": "node --version && npm --version && git --version"
+            },
+            {
+              "name": "View Application Logs",
+              "command": "tail -f logs/app.log"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

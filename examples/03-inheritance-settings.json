@@ -1,0 +1,86 @@
+{
+  "groups": [
+    {
+      "name": "AWS Infrastructure",
+      "defaultUser": "ec2-user",
+      "defaultPort": 22,
+      "defaultIdentityFile": "~/.ssh/aws-key.pem",
+      "defaultPreferredAuthentication": "publickey",
+      "hosts": [
+        {
+          "name": "Bastion Host",
+          "hostName": "bastion.aws.example.com"
+        }
+      ],
+      "groups": [
+        {
+          "name": "US East Region",
+          "groups": [
+            {
+              "name": "Production VPC",
+              "hosts": [
+                {
+                  "name": "Web Server 1",
+                  "hostName": "web-1.us-east.prod.aws.example.com"
+                },
+                {
+                  "name": "Web Server 2",
+                  "hostName": "web-2.us-east.prod.aws.example.com"
+                }
+              ]
+            },
+            {
+              "name": "Staging VPC",
+              "defaultUser": "ubuntu",
+              "hosts": [
+                {
+                  "name": "Staging Web",
+                  "hostName": "web.us-east.staging.aws.example.com"
+                },
+                {
+                  "name": "Staging DB",
+                  "hostName": "db.us-east.staging.aws.example.com",
+                  "user": "postgres",
+                  "port": 5432
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "EU West Region",
+          "defaultIdentityFile": "~/.ssh/aws-eu-key.pem",
+          "groups": [
+            {
+              "name": "Production VPC",
+              "hosts": [
+                {
+                  "name": "EU Web Server",
+                  "hostName": "web.eu-west.prod.aws.example.com"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Legacy Servers",
+      "defaultUser": "root",
+      "defaultPort": 22,
+      "defaultPreferredAuthentication": "password",
+      "hosts": [
+        {
+          "name": "Old Web Server",
+          "hostName": "legacy-web.example.com"
+        },
+        {
+          "name": "Old DB Server",
+          "hostName": "legacy-db.example.com",
+          "preferredAuthentication": "publickey",
+          "identityFile": "~/.ssh/legacy_key"
+        }
+      ]
+    }
+  ]
+}

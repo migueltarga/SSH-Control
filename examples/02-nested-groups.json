@@ -1,0 +1,73 @@
+{
+  "groups": [
+    {
+      "name": "Production Environment",
+      "defaultUser": "prod",
+      "defaultPort": 22,
+      "defaultIdentityFile": "~/.ssh/production_key",
+      "defaultPreferredAuthentication": "publickey",
+      "hosts": [
+        {
+          "name": "Jump Server",
+          "hostName": "jump.prod.example.com",
+          "user": "jumpuser"
+        }
+      ],
+      "groups": [
+        {
+          "name": "Frontend Cluster",
+          "hosts": [
+            {
+              "name": "Frontend 1",
+              "hostName": "frontend-1.prod.example.com"
+            },
+            {
+              "name": "Frontend 2", 
+              "hostName": "frontend-2.prod.example.com"
+            },
+            {
+              "name": "Frontend 3",
+              "hostName": "frontend-3.prod.example.com"
+            }
+          ]
+        },
+        {
+          "name": "Backend Services",
+          "groups": [
+            {
+              "name": "API Servers",
+              "hosts": [
+                {
+                  "name": "API Server 1",
+                  "hostName": "api-1.prod.example.com"
+                },
+                {
+                  "name": "API Server 2",
+                  "hostName": "api-2.prod.example.com"
+                }
+              ]
+            },
+            {
+              "name": "Database Cluster",
+              "defaultUser": "dbuser",
+              "hosts": [
+                {
+                  "name": "DB Primary",
+                  "hostName": "db-primary.prod.example.com"
+                },
+                {
+                  "name": "DB Replica 1",
+                  "hostName": "db-replica-1.prod.example.com"
+                },
+                {
+                  "name": "DB Replica 2", 
+                  "hostName": "db-replica-2.prod.example.com"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

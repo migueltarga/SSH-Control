@@ -1,0 +1,87 @@
+{
+  "groups": [
+    {
+      "name": "Application Servers",
+      "defaultUser": "deploy",
+      "defaultPort": 22,
+      "defaultIdentityFile": "~/.ssh/app_key",
+      "hosts": [
+        {
+          "name": "Frontend Server",
+          "hostName": "frontend.example.com",
+          "snippets": [
+            {
+              "name": "Check Frontend Status",
+              "command": "systemctl status nginx && systemctl status frontend-app"
+            },
+            {
+              "name": "View Frontend Logs",
+              "command": "tail -f /var/log/nginx/access.log"
+            },
+            {
+              "name": "Restart Frontend Services",
+              "command": "sudo systemctl restart nginx && sudo systemctl restart frontend-app"
+            },
+            {
+              "name": "Check Frontend Performance",
+              "command": "top -p $(pgrep -f frontend-app) -n 1"
+            }
+          ]
+        },
+        {
+          "name": "API Server",
+          "hostName": "api.example.com",
+          "snippets": [
+            {
+              "name": "Check API Health",
+              "command": "curl -s http://localhost:8080/health | jq ."
+            },
+            {
+              "name": "View API Logs",
+              "command": "tail -f /var/log/api/application.log"
+            },
+            {
+              "name": "Restart API Service",
+              "command": "sudo systemctl restart api-service"
+            },
+            {
+              "name": "Check API Database Connection",
+              "command": "curl -s http://localhost:8080/health/db | jq ."
+            },
+            {
+              "name": "Monitor API Requests",
+              "command": "tail -f /var/log/api/access.log | grep -E 'POST|PUT|DELETE'"
+            }
+          ]
+        },
+        {
+          "name": "Database Server",
+          "hostName": "db.example.com",
+          "user": "dbadmin",
+          "snippets": [
+            {
+              "name": "Check DB Status",
+              "command": "sudo systemctl status postgresql"
+            },
+            {
+              "name": "Monitor DB Connections",
+              "command": "sudo -u postgres psql -c \"SELECT count(*) as active_connections FROM pg_stat_activity;\""
+            },
+            {
+              "name": "View DB Logs",
+              "command": "sudo tail -f /var/log/postgresql/postgresql.log"
+            },
+            {
+              "name": "Backup Database",
+              "command": "sudo -u postgres pg_dump myapp > /tmp/myapp_backup_$(date +%Y%m%d_%H%M%S).sql"
+            },
+            {
+              "name": "Check DB Size",
+              "command": "sudo -u postgres psql -c \"SELECT pg_size_pretty(pg_database_size('myapp'));\""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

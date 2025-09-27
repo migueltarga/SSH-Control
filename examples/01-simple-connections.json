@@ -1,0 +1,42 @@
+{
+  "groups": [
+    {
+      "name": "Web Servers",
+      "defaultUser": "deploy",
+      "defaultPort": 22,
+      "defaultIdentityFile": "~/.ssh/web_servers_key",
+      "defaultPreferredAuthentication": "publickey",
+      "hosts": [
+        {
+          "name": "Frontend Server",
+          "hostName": "frontend.example.com"
+        },
+        {
+          "name": "Backend Server", 
+          "hostName": "backend.example.com"
+        },
+        {
+          "name": "Load Balancer",
+          "hostName": "lb.example.com",
+          "user": "admin"
+        }
+      ]
+    },
+    {
+      "name": "Database Servers",
+      "defaultUser": "dbadmin",
+      "defaultPort": 22,
+      "defaultPreferredAuthentication": "password",
+      "hosts": [
+        {
+          "name": "Primary DB",
+          "hostName": "db-primary.example.com"
+        },
+        {
+          "name": "Secondary DB",
+          "hostName": "db-secondary.example.com"
+        }
+      ]
+    }
+  ]
+}

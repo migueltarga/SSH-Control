@@ -1,0 +1,35 @@
+{
+  "groups": [
+    {
+      "name": "Local Servers",
+      "defaultUser": "admin",
+      "defaultPort": 22,
+      "hosts": [
+        {
+          "name": "Local Dev Server",
+          "hostName": "localhost",
+          "port": 2222
+        }
+      ]
+    },
+    {
+      "name": "Remote Managed Servers",
+      "defaultUser": "deploy",
+      "defaultPort": 22,
+      "defaultIdentityFile": "~/.ssh/remote_key",
+      "remoteHosts": {
+        "address": "https://config.example.com/ssh-servers.json",
+        "basicAuth": {
+          "username": "configuser",
+          "password": "configpass"
+        }
+      }
+    },
+    {
+      "name": "Dynamic Infrastructure",
+      "remoteHosts": {
+        "address": "https://api.example.com/infrastructure/servers?format=ssh-control&ts=[timestamp]"
+      }
+    }
+  ]
+}
