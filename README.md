@@ -2,6 +2,8 @@
 
 Manage SSH connections from VSCode
 
+https://marketplace.visualstudio.com/items?itemName=MiguelTarga.ssh-control
+
 ![screenshot](https://github.com/migueltarga/SSH-Control/blob/main/screenshots/image.png?raw=true)
 
 ## Features
