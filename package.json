@@ -2,7 +2,7 @@
   "name": "ssh-control",
   "displayName": "SSH Control",
   "description": "Manage SSH connections directly from VSCode.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "migueltarga",
   "author": {
     "name": "Miguel Targa",

@@ -175,7 +175,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	const openConfigCommand = vscode.commands.registerCommand('sshServers.openConfig', async () => {
-		const configPath = configManager.getConfigFilePath();
+		const configPath = configManager.getConfigFilePathForEditing();
 		try {
 			const document = await vscode.workspace.openTextDocument(configPath);
 			await vscode.window.showTextDocument(document);
@@ -248,7 +248,6 @@ export function activate(context: vscode.ExtensionContext) {
 		hostHistoryClearFilterCommand,
 		runSnippetCommand
 	);
-	vscode.window.showInformationMessage(`SSH Control loaded. Config file: ${configManager.getConfigFilePath()}`);
 }
 
 export function deactivate() {}

@@ -1,57 +1,88 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { SSHConfig, SSHGroup, SSHHost } from './types';
 
 export class SSHConfigManager {
-  private configPath: string;
+  private readonly globalConfigPath: string;
+  private readonly workspaceConfigPath: string | null;
   private _onDidChangeConfig: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
   readonly onDidChangeConfig: vscode.Event<void> = this._onDidChangeConfig.event;
 
   constructor() {
-    this.configPath = this.getConfigPath();
+    this.globalConfigPath = path.join(os.homedir(), '.ssh-control', 'ssh-config.json');
+    
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    this.workspaceConfigPath = workspaceFolder 
+      ? path.join(workspaceFolder.uri.fsPath, 'ssh-config.json')
+      : null;
   }
 
-  private getConfigPath(): string {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    if (workspaceFolder) {
-      return path.join(workspaceFolder.uri.fsPath, 'ssh-config.json');
-    }
+  private hasWorkspaceConfig(): boolean {
+    return this.workspaceConfigPath !== null && fs.existsSync(this.workspaceConfigPath);
+  }
 
-    const homeDir = require('os').homedir();
-    return path.join(homeDir, '.ssh-control', 'ssh-config.json');
+  private getSaveConfigPath(): string {
+    return this.hasWorkspaceConfig() ? this.workspaceConfigPath! : this.globalConfigPath;
+  }
+
+  private getDefaultConfig(): SSHConfig {
+    return {
+      groups: [
+        {
+          name: "Default",
+          defaultUser: "root",
+          defaultPort: 22,
+          defaultIdentityFile: "",
+          snippets: [
+            {
+              name: "System Status",
+              command: "uname -a && uptime && df -h"
+            },
+            {
+              name: "Process Monitor",
+              command: "top -n 1 | head -20"
+            }
+          ],
+          hosts: []
+        }
+      ]
+    };
   }
 
   private async ensureConfigExists(): Promise<void> {
-    if (!fs.existsSync(this.configPath)) {
-      const defaultConfig: SSHConfig = {
-        groups: [
-          {
-            name: "Default",
-            defaultUser: "root",
-            defaultPort: 22,
-            defaultIdentityFile: "",
-            snippets: [
-              {
-                name: "System Status",
-                command: "uname -a && uptime && df -h"
-              },
-              {
-                name: "Process Monitor",
-                command: "top -n 1 | head -20"
-              }
-            ],
-            hosts: []
-          }
-        ]
-      };
+    const globalConfigDir = path.dirname(this.globalConfigPath);
+    if (!fs.existsSync(globalConfigDir)) {
+      fs.mkdirSync(globalConfigDir, { recursive: true });
+    }
 
-      const configDir = path.dirname(this.configPath);
-      if (!fs.existsSync(configDir)) {
-        fs.mkdirSync(configDir, { recursive: true });
+    if (!fs.existsSync(this.globalConfigPath) && !this.hasWorkspaceConfig()) {
+      await this.saveConfig(this.getDefaultConfig());
+    }
+  }
+
+  private mergeConfigs(globalConfig: SSHConfig, workspaceConfig: SSHConfig): SSHConfig {
+    const workspaceGroups = workspaceConfig.groups.map(group => ({
+      ...group,
+      name: `[Workspace] ${group.name}`
+    }));
+
+    return {
+      groups: [...globalConfig.groups, ...workspaceGroups]
+    };
+  }
+
+  private loadConfigFile(filePath: string): SSHConfig | null {
+    try {
+      if (!fs.existsSync(filePath)) {
+        return null;
       }
-      
-      await this.saveConfig(defaultConfig);
+      const configData = fs.readFileSync(filePath, 'utf8');
+      return this.validateAndNormalizeConfig(JSON.parse(configData));
+    } catch (error) {
+      console.error(`Failed to load config from ${filePath}:`, error);
+      return null;
     }
   }
 
@@ -59,9 +90,16 @@ export class SSHConfigManager {
     await this.ensureConfigExists();
     
     try {
-      const configData = fs.readFileSync(this.configPath, 'utf8');
-      const config = JSON.parse(configData);
-      return this.validateAndNormalizeConfig(config);
+      const globalConfig = this.loadConfigFile(this.globalConfigPath) || { groups: [] };
+      
+      if (this.hasWorkspaceConfig()) {
+        const workspaceConfig = this.loadConfigFile(this.workspaceConfigPath!);
+        if (workspaceConfig) {
+          return this.mergeConfigs(globalConfig, workspaceConfig);
+        }
+      }
+
+      return globalConfig;
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to load SSH config: ${error}`);
       return { groups: [] };
@@ -101,7 +139,8 @@ export class SSHConfigManager {
   async saveConfig(config: SSHConfig): Promise<void> {
     try {
       const configData = JSON.stringify(config, null, 2);
-      fs.writeFileSync(this.configPath, configData, 'utf8');
+      const targetPath = this.getSaveConfigPath();
+      fs.writeFileSync(targetPath, configData, 'utf8');
       this._onDidChangeConfig.fire();
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to save SSH config: ${error}`);
@@ -187,6 +226,15 @@ export class SSHConfigManager {
   }
 
   getConfigFilePath(): string {
-    return this.configPath;
+    const paths = [];
+    if (this.hasWorkspaceConfig()) {
+      paths.push(`Workspace: ${this.workspaceConfigPath}`);
+    }
+    paths.push(`Global: ${this.globalConfigPath}`);
+    return paths.join(' | ');
+  }
+
+  getConfigFilePathForEditing(): string {
+    return this.getSaveConfigPath();
   }
 }

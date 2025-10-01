@@ -4,6 +4,18 @@ All notable changes to the "ssh-control" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.0.1] - 2025-10-01
+
+### Changed
+- **Global Configuration by Default**: SSH config now saves to `~/.ssh-control/ssh-config.json` by default
+  - Configuration is now shared across all workspaces
+  - Workspace-specific configs (`ssh-config.json` in project root) are still supported if they exist
+  - Both configs are merged when workspace config is present (workspace groups prefixed with `[Workspace]`)
+- **Config Button Behavior**: Open config button now opens workspace config if it exists, otherwise opens global config
+
+### Fixed
+- Removed annoying "SSH Control loaded" notification that appeared on every terminal open
+
 ## [1.0.0] - 2025-09-26
 
 ### Added
